@@ -11,7 +11,7 @@ yarn
 ### How to run on local
 ```bash
 yarn dev
-open [http://localhost:3000/](http://localhost:3000/)
+open http://localhost:3000
 ```
 
 ### How to deploy
