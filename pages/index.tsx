@@ -2,7 +2,7 @@ import { FormEvent, useRef, useState } from 'react';
 import style from './Theme.module.css'
 
 
-function DataTable({ data, threshold }: any) {
+function DataTable({ data, threshold, filtered }: any) {
   return (
     <table className="table table-hover">
       <thead>
@@ -15,19 +15,27 @@ function DataTable({ data, threshold }: any) {
         </tr>
       </thead>
       <tbody>
-        {data.map(({ buySellRatio, buyVol, sellVol, timestamp }: any, index: number) => (
-          <tr key={index} className={buySellRatio <= threshold ? 'table-danger' : ''}>
-            <th scope="row">{index + 1}</th>
-            <td>
-              <span className={buySellRatio <= threshold ? "badge bg-danger" : ""}>
-                {buySellRatio}
-              </span>
-            </td>
-            <td>{buyVol}</td>
-            <td>{sellVol}</td>
-            <td>{`${new Date(timestamp).toLocaleTimeString()}, ${new Date(timestamp).toLocaleDateString()}`}</td>
-          </tr>
-        ))}
+        {data.map(({ buySellRatio, buyVol, sellVol, timestamp }: any, index: number) => {
+          const isHighlighted = buySellRatio <= threshold;
+
+          if (filtered && !isHighlighted) {
+            return null;
+          }
+
+          return (
+            <tr key={index} className={isHighlighted ? 'table-danger' : ''}>
+              <th scope="row">{index + 1}</th>
+              <td>
+                <span className={isHighlighted ? "badge bg-danger" : ""}>
+                  {buySellRatio}
+                </span>
+              </td>
+              <td>{buyVol}</td>
+              <td>{sellVol}</td>
+              <td>{`${new Date(timestamp).toLocaleTimeString()}, ${new Date(timestamp).toLocaleDateString()}`}</td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   );
@@ -43,7 +51,12 @@ export default function Home() {
   const gapRef = useRef(0.5);
   const [timer, setTimer] = useState<number>(0);
   const timerRef = useRef(0);
+  const [filtered, setFiltered] = useState<boolean>(false);
   const [data, setData] = useState([]);
+
+  const onFilterChange = (event: FormEvent<HTMLInputElement>) => {
+    setFiltered(!filtered);
+  }
 
   const onSymbolChange = (event: FormEvent<HTMLInputElement>) => {
     setSymbol(event.currentTarget.value)
@@ -200,7 +213,7 @@ export default function Home() {
 
 
                 next request in <b>({timer}s)</b>:
-                <div className="progress">
+                <div className="progress mb-5">
                   <div
                     className="progress-bar progress-bar-striped progress-bar-animated"
                     role="progressbar"
@@ -209,6 +222,13 @@ export default function Home() {
                     aria-valuemax={100}
                     style={{ width: `${Math.floor((timer / (gap * 60)) * 100)}%` }}
                   />
+                </div>
+
+                <div className="d-flex flex-row-reverse">
+                  <div className="form-check pt-5">
+                    <input checked={filtered} onChange={onFilterChange} type="checkbox" className={style.checkbox + ' form-check-input'} id="filtered" />
+                    <label className={style.biglabel + ' form-check-label'} htmlFor="filtered">Filtered</label>
+                  </div>
                 </div>
               </>
             )}
@@ -226,7 +246,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        {!!data.length && <DataTable data={data} threshold={threshold} />}
+        {!!data.length && <DataTable data={data} threshold={threshold} filtered={filtered} />}
       </div>
     </>
   )
