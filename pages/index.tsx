@@ -1,4 +1,6 @@
 import { FormEvent, useRef, useState } from 'react';
+import style from './Theme.module.css'
+
 
 function DataTable({ data, threshold }: any) {
   return (
@@ -125,8 +127,8 @@ export default function Home() {
 
       <div className="container">
         <div className="row">
-          <div className="col-sm">
-            <div className="card mb-5">
+          <div className="col-sm mb-5">
+            <div className="card">
               <div className="card-body">
                 <h5 className="card-title">Taker Buy/Sell Volume</h5>
                 <h6 className="card-subtitle mb-4 text-muted">
@@ -176,7 +178,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="col-sm">
+          <div className="col-sm mb-5">
             {!!data.length && (
               <>
                 <div className="row">
@@ -214,13 +216,13 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="container">
-
-
+      <div className={style.relative + ' container'}>
         {loading && (
-          <div className="text-center">
-            <div className="spinner-border" role="status">
-              <span className="sr-only"></span>
+          <div className={style.loader}>
+            <div className="text-center">
+              <div className="spinner-border" role="status">
+                <span className="sr-only"></span>
+              </div>
             </div>
           </div>
         )}
