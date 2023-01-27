@@ -16,7 +16,7 @@ function DataTable({ data }: any) {
         {data.map(({ buySellRatio, buyVol, sellVol, timestamp }: any, index: number) => (
           <tr key={index}>
             <th scope="row">{index + 1}</th>
-            <td>{buySellRatio}</td>
+            <td className={buySellRatio <= 0.8 ? "text-danger" : ""}>{buySellRatio}</td>
             <td>{buyVol}</td>
             <td>{sellVol}</td>
             <td>{`${new Date(timestamp).toLocaleTimeString()}, ${new Date(timestamp).toLocaleDateString()}`}</td>
@@ -30,7 +30,7 @@ function DataTable({ data }: any) {
 export default function Home() {
   const [loading, setLoading] = useState<boolean>(false);
   const [symbol, setSymbol] = useState<string>('BTCUSDT');
-  const [period, setPeriod] = useState<string>('5m');
+  const [period, setPeriod] = useState<string>('15m');
   const [data, setData] = useState([]);
 
   const onSymbolChange = (event: FormEvent<HTMLInputElement>) => {
@@ -44,7 +44,7 @@ export default function Home() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${symbol}&period=${period}&limit=30`, {
+      const response = await fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${symbol}&period=${period}&limit=500`, {
         headers: {
           'X-MBX-APIKEY': '1sqj86AlSZsVw19qzAcda7iJ3qbBDX8sZsgob8SEWFBVhFxwK5NcLPDXeZwXryEp'
         }
