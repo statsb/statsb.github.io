@@ -1,4 +1,4 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 
 function DataTable({ data, threshold }: any) {
   return (
@@ -37,8 +37,10 @@ export default function Home() {
   const [period, setPeriod] = useState<string>('15m');
   const [limit, setLimit] = useState<number>(100);
   const [threshold, setThreshold] = useState<number>(0.8);
-  const [gap, setGap] = useState<number>(1);
+  const [gap, setGap] = useState<number>(0.5);
+  const gapRef = useRef(0.5);
   const [timer, setTimer] = useState<number>(0);
+  const timerRef = useRef(0);
   const [data, setData] = useState([]);
 
   const onSymbolChange = (event: FormEvent<HTMLInputElement>) => {
@@ -54,17 +56,42 @@ export default function Home() {
   }
 
   const onGapChange = (event: FormEvent<HTMLSelectElement>) => {
-    setGap(Number(event.currentTarget.value))
+    setGap(Number(event.currentTarget.value));
+    gapRef.current = Number(event.currentTarget.value);
+
+    timerRef.current = 0;
+    setTimer(0);
   }
 
   const onLimitChange = (event: FormEvent<HTMLInputElement>) => {
     setLimit(Number(event.currentTarget.value))
   }
 
+  const updateTimer = (reset = false) => {
+    const step = 1; // seconds
+    if (reset) {
+      timerRef.current = gapRef.current * 60;
+      setTimer(gapRef.current * 60); // gap is in minutes, timer expects seconds
+    }
+
+    setTimeout(() => {
+      const updatedTimer = Math.max(timerRef.current - step, 0);
+
+      if (updatedTimer === 0) {
+        fetchData();
+        setTimer(updatedTimer);
+      } else {
+        timerRef.current = updatedTimer;
+        setTimer(updatedTimer);
+        updateTimer();
+      }
+    }, step * 1000);
+  }
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${symbol}&period=${period}&limit=500`, {
+      const response = await fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${symbol}&period=${period}&limit=${limit}`, {
         headers: {
           'X-MBX-APIKEY': '1sqj86AlSZsVw19qzAcda7iJ3qbBDX8sZsgob8SEWFBVhFxwK5NcLPDXeZwXryEp'
         }
@@ -72,6 +99,7 @@ export default function Home() {
       const data = await response.json();
       console.log(data);
       setData(data);
+      updateTimer(true);
     }
     catch (error: any) {
       console.log(error);
@@ -149,27 +177,39 @@ export default function Home() {
             </div>
           </div>
           <div className="col-sm">
-            <div className="row">
-              <div className="col form-group mb-3">
-                <label htmlFor="gap">Make requests every:</label>
-                <select value={gap} onChange={onGapChange} className="form-control" id="gap">
-                  <option value={1}>1m</option>
-                  <option value={2}>2m</option>
-                  <option value={3}>3m</option>
-                  <option value={5}>5m</option>
-                  <option value={15}>15m</option>
-                  <option value={30}>30m</option>
-                  <option value={60}>1h</option>
-                </select>
-              </div>
-              <div className="col"></div>
-            </div>
+            {!!data.length && (
+              <>
+                <div className="row">
+                  <div className="col form-group mb-3">
+                    <label htmlFor="gap">Make requests every:</label>
+                    <select value={gap} onChange={onGapChange} className="form-control" id="gap">
+                      <option value={0.5}>30s</option>
+                      <option value={1}>1m</option>
+                      <option value={2}>2m</option>
+                      <option value={3}>3m</option>
+                      <option value={5}>5m</option>
+                      <option value={15}>15m</option>
+                      <option value={30}>30m</option>
+                      <option value={60}>1h</option>
+                    </select>
+                  </div>
+                  <div className="col"></div>
+                </div>
 
-            <br />
-            Making next request in:
-            <div className="progress">
-              <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow={75} aria-valuemin={0} aria-valuemax={100} style={{ width: '75%' }}></div>
-            </div>
+
+                next request in <b>({timer}s)</b>:
+                <div className="progress">
+                  <div
+                    className="progress-bar progress-bar-striped progress-bar-animated"
+                    role="progressbar"
+                    aria-valuenow={75}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    style={{ width: `${Math.floor((timer / (gap * 60)) * 100)}%` }}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
