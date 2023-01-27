@@ -45,12 +45,17 @@ function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
 }
 
 export default function Home() {
+  const LOWER_THRESHOLD = 0.8;
+  const UPPER_THRESHOLD = 1.2;
+
   const [loading, setLoading] = useState<boolean>(false);
   const [symbol, setSymbol] = useState<string>('BTCUSDT');
   const [period, setPeriod] = useState<string>('15m');
   const [limit, setLimit] = useState<number>(100);
-  const [lowerThreshold, setLowerThreshold] = useState<number>(0.8);
-  const [upperThreshold, setUpperThreshold] = useState<number>(1.2);
+  const [lowerThreshold, setLowerThreshold] = useState<number>(LOWER_THRESHOLD);
+  const lowerThresholdRef = useRef(LOWER_THRESHOLD);
+  const [upperThreshold, setUpperThreshold] = useState<number>(UPPER_THRESHOLD);
+  const upperThresholdRef = useRef(UPPER_THRESHOLD);
   const [gap, setGap] = useState<number>(0.5);
   const gapRef = useRef(0.5);
   const [timer, setTimer] = useState<number>(0);
@@ -58,7 +63,7 @@ export default function Home() {
   const [filtered, setFiltered] = useState<boolean>(false);
   const [data, setData] = useState([]);
 
-  const onFilterChange = (event: FormEvent<HTMLInputElement>) => {
+  const onFilterChange = () => {
     setFiltered(!filtered);
   }
 
@@ -71,11 +76,15 @@ export default function Home() {
   }
 
   const onLowerThresholdChange = (event: FormEvent<HTMLInputElement>) => {
-    setLowerThreshold(Number(event.currentTarget.value))
+    const value = Number(event.currentTarget.value);
+    setLowerThreshold(value);
+    lowerThresholdRef.current = value;
   }
 
   const onUpperThresholdChange = (event: FormEvent<HTMLInputElement>) => {
-    setUpperThreshold(Number(event.currentTarget.value))
+    const value = Number(event.currentTarget.value);
+    setUpperThreshold(Number(event.currentTarget.value));
+    upperThresholdRef.current = value;
   }
 
   const onGapChange = (event: FormEvent<HTMLSelectElement>) => {
@@ -111,6 +120,25 @@ export default function Home() {
     }, step * 1000);
   }
 
+  const calculateStats = (data: any) => {
+    let lowerHighlightsCount = 0;
+    let upperHighlightsCount = 0;
+
+    const dataClone = JSON.parse(JSON.stringify(data));
+
+    dataClone.forEach(({ buySellRatio }: any) => {
+      if (buySellRatio <= lowerThresholdRef.current) {
+        lowerHighlightsCount += 1;
+      } else if (buySellRatio >= upperThresholdRef.current) {
+        upperHighlightsCount += 1;
+      }
+    });
+
+    if (typeof document !== 'undefined') {
+      document.title = `${symbol} 🔴${lowerHighlightsCount} 🟢${upperHighlightsCount}`
+    }
+  }
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -123,6 +151,7 @@ export default function Home() {
       console.log(data);
       setData(data);
       updateTimer(true);
+      calculateStats(data);
     }
     catch (error: any) {
       console.log(error);
