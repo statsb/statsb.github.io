@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
 
-function DataTable({ data }: any) {
+function DataTable({ data, threshold }: any) {
   return (
     <table className="table table-hover">
       <thead>
@@ -16,7 +16,11 @@ function DataTable({ data }: any) {
         {data.map(({ buySellRatio, buyVol, sellVol, timestamp }: any, index: number) => (
           <tr key={index}>
             <th scope="row">{index + 1}</th>
-            <td className={buySellRatio <= 0.8 ? "text-danger" : ""}>{buySellRatio}</td>
+            <td>
+              <span className={buySellRatio <= threshold ? "badge bg-danger" : ""}>
+                {buySellRatio}
+              </span>
+            </td>
             <td>{buyVol}</td>
             <td>{sellVol}</td>
             <td>{`${new Date(timestamp).toLocaleTimeString()}, ${new Date(timestamp).toLocaleDateString()}`}</td>
@@ -31,6 +35,10 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(false);
   const [symbol, setSymbol] = useState<string>('BTCUSDT');
   const [period, setPeriod] = useState<string>('15m');
+  const [limit, setLimit] = useState<number>(100);
+  const [threshold, setThreshold] = useState<number>(0.8);
+  const [gap, setGap] = useState<number>(1);
+  const [timer, setTimer] = useState<number>(0);
   const [data, setData] = useState([]);
 
   const onSymbolChange = (event: FormEvent<HTMLInputElement>) => {
@@ -39,6 +47,18 @@ export default function Home() {
 
   const onPeriodChange = (event: FormEvent<HTMLSelectElement>) => {
     setPeriod(event.currentTarget.value)
+  }
+
+  const onThresholdChange = (event: FormEvent<HTMLInputElement>) => {
+    setThreshold(Number(event.currentTarget.value))
+  }
+
+  const onGapChange = (event: FormEvent<HTMLSelectElement>) => {
+    setGap(Number(event.currentTarget.value))
+  }
+
+  const onLimitChange = (event: FormEvent<HTMLInputElement>) => {
+    setLimit(Number(event.currentTarget.value))
   }
 
   const fetchData = async () => {
@@ -53,8 +73,9 @@ export default function Home() {
       console.log(data);
       setData(data);
     }
-    catch (error) {
+    catch (error: any) {
       console.log(error);
+      document.write(JSON.stringify(error?.message));
     }
     finally {
       setLoading(false);
@@ -75,38 +96,86 @@ export default function Home() {
       </div>
 
       <div className="container">
-        <div className="card mb-5" style={{ 'maxWidth': '25rem' }}>
-          <div className="card-body">
-            <h5 className="card-title">Taker Buy/Sell Volume</h5>
-            <h6 className="card-subtitle mb-4 text-muted">
-              <code>GET /futures/data/takerlongshortRatio</code>
-            </h6>
+        <div className="row">
+          <div className="col-sm">
+            <div className="card mb-5">
+              <div className="card-body">
+                <h5 className="card-title">Taker Buy/Sell Volume</h5>
+                <h6 className="card-subtitle mb-4 text-muted">
+                  <code>GET /futures/data/takerlongshortRatio</code>
+                </h6>
 
-            <form onSubmit={onSubmit}>
-              <div className="form-group mb-3">
-                <label htmlFor="symbol">Symbol</label>
-                <input value={symbol} onChange={onSymbolChange} type="text" className="form-control" id="symbol" aria-describedby="symbolHelp" placeholder="symbol e.g. BTCUSDT" />
+                <form onSubmit={onSubmit}>
+                  <div className="row">
+                    <div className="col form-group mb-3">
+                      <label htmlFor="symbol">Symbol</label>
+                      <input value={symbol} onChange={onSymbolChange} type="text" className="form-control" id="symbol" aria-describedby="symbolHelp" placeholder="symbol e.g. BTCUSDT" />
+                    </div>
+
+                    <div className="col form-group mb-3">
+                      <label htmlFor="period">Period</label>
+                      <select value={period} onChange={onPeriodChange} className="form-control" id="period">
+                        <option>5m</option>
+                        <option>15m</option>
+                        <option>30m</option>
+                        <option>1h</option>
+                        <option>2h</option>
+                        <option>4h</option>
+                        <option>6h</option>
+                        <option>12h</option>
+                        <option>1d</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col form-group mb-3">
+                      <label htmlFor="threshold">Limit</label>
+                      <input value={limit} onChange={onLimitChange} type="number" className="form-control" id="limit" aria-describedby="limitHelp" placeholder="limit (30 - 500)" />
+                    </div>
+
+                    <div className="col form-group mb-3">
+                      <label htmlFor="threshold">Threshold</label>
+                      <input value={threshold} onChange={onThresholdChange} type="number" className="form-control" id="threshold" aria-describedby="thresholdHelp" placeholder="warning threshold" />
+                    </div>
+                  </div>
+
+                  <div className="d-grid gap-2">
+                    <button disabled={loading} type="submit" className="btn btn-block btn-warning mb-2">Submit</button>
+                  </div>
+
+                </form>
               </div>
-
-              <div className="form-group mb-3">
-                <label htmlFor="period">Period</label>
-                <select value={period} onChange={onPeriodChange} className="form-control" id="period">
-                  <option>5m</option>
-                  <option>15m</option>
-                  <option>30m</option>
-                  <option>1h</option>
-                  <option>2h</option>
-                  <option>4h</option>
-                  <option>6h</option>
-                  <option>12h</option>
-                  <option>1d</option>
+            </div>
+          </div>
+          <div className="col-sm">
+            <div className="row">
+              <div className="col form-group mb-3">
+                <label htmlFor="gap">Make requests every:</label>
+                <select value={gap} onChange={onGapChange} className="form-control" id="gap">
+                  <option value={1}>1m</option>
+                  <option value={2}>2m</option>
+                  <option value={3}>3m</option>
+                  <option value={5}>5m</option>
+                  <option value={15}>15m</option>
+                  <option value={30}>30m</option>
+                  <option value={60}>1h</option>
                 </select>
               </div>
+              <div className="col"></div>
+            </div>
 
-              <button disabled={loading} type="submit" className="btn btn-warning mb-2">Submit</button>
-            </form>
+            <br />
+            Making next request in:
+            <div className="progress">
+              <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow={75} aria-valuemin={0} aria-valuemax={100} style={{ width: '75%' }}></div>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div className="container">
+
 
         {loading && (
           <div className="text-center">
@@ -115,7 +184,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        {!!data.length && <DataTable data={data} />}
+        {!!data.length && <DataTable data={data} threshold={threshold} />}
       </div>
     </>
   )
