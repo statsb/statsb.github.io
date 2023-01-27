@@ -14,7 +14,7 @@ function DataTable({ data, threshold }: any) {
       </thead>
       <tbody>
         {data.map(({ buySellRatio, buyVol, sellVol, timestamp }: any, index: number) => (
-          <tr key={index}>
+          <tr key={index} className={buySellRatio <= threshold ? 'table-danger' : ''}>
             <th scope="row">{index + 1}</th>
             <td>
               <span className={buySellRatio <= threshold ? "badge bg-danger" : ""}>
