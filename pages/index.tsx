@@ -2,7 +2,7 @@ import { FormEvent, useRef, useState } from 'react';
 import style from './Theme.module.css'
 
 
-function DataTable({ data, threshold, filtered }: any) {
+function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
   return (
     <table className="table table-hover">
       <thead>
@@ -16,17 +16,20 @@ function DataTable({ data, threshold, filtered }: any) {
       </thead>
       <tbody>
         {data.map(({ buySellRatio, buyVol, sellVol, timestamp }: any, index: number) => {
-          const isHighlighted = buySellRatio <= threshold;
+          const isLowerThreshold = buySellRatio <= lowerThreshold;
+          const isUpperThreshold = buySellRatio >= upperThreshold;
 
-          if (filtered && !isHighlighted) {
+          if (filtered && (!isLowerThreshold && !isUpperThreshold)) {
             return null;
           }
 
+          const highlightedClass = isLowerThreshold ? 'danger' : (isUpperThreshold ? 'success' : '');
+
           return (
-            <tr key={index} className={isHighlighted ? 'table-danger' : ''}>
+            <tr key={index} className={highlightedClass ? `table-${highlightedClass}` : ''}>
               <th scope="row">{index + 1}</th>
               <td>
-                <span className={isHighlighted ? "badge bg-danger" : ""}>
+                <span className={highlightedClass ? `badge bg-${highlightedClass}` : ''}>
                   {buySellRatio}
                 </span>
               </td>
@@ -46,7 +49,8 @@ export default function Home() {
   const [symbol, setSymbol] = useState<string>('BTCUSDT');
   const [period, setPeriod] = useState<string>('15m');
   const [limit, setLimit] = useState<number>(100);
-  const [threshold, setThreshold] = useState<number>(0.8);
+  const [lowerThreshold, setLowerThreshold] = useState<number>(0.8);
+  const [upperThreshold, setUpperThreshold] = useState<number>(1.2);
   const [gap, setGap] = useState<number>(0.5);
   const gapRef = useRef(0.5);
   const [timer, setTimer] = useState<number>(0);
@@ -66,8 +70,12 @@ export default function Home() {
     setPeriod(event.currentTarget.value)
   }
 
-  const onThresholdChange = (event: FormEvent<HTMLInputElement>) => {
-    setThreshold(Number(event.currentTarget.value))
+  const onLowerThresholdChange = (event: FormEvent<HTMLInputElement>) => {
+    setLowerThreshold(Number(event.currentTarget.value))
+  }
+
+  const onUpperThresholdChange = (event: FormEvent<HTMLInputElement>) => {
+    setUpperThreshold(Number(event.currentTarget.value))
   }
 
   const onGapChange = (event: FormEvent<HTMLSelectElement>) => {
@@ -173,13 +181,20 @@ export default function Home() {
 
                   <div className="row">
                     <div className="col form-group mb-3">
-                      <label htmlFor="threshold">Limit</label>
+                      <label htmlFor="lowerThreshold">Limit</label>
                       <input value={limit} onChange={onLimitChange} type="number" className="form-control" id="limit" aria-describedby="limitHelp" placeholder="limit (30 - 500)" />
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col form-group mb-3">
+                      <label htmlFor="lowerThreshold">Lower Threshold</label>
+                      <input value={lowerThreshold} onChange={onLowerThresholdChange} type="number" className="form-control" id="lowerThreshold" aria-describedby="lowerThresholdHelp" placeholder="lowerThreshold" />
                     </div>
 
                     <div className="col form-group mb-3">
-                      <label htmlFor="threshold">Threshold</label>
-                      <input value={threshold} onChange={onThresholdChange} type="number" className="form-control" id="threshold" aria-describedby="thresholdHelp" placeholder="warning threshold" />
+                      <label htmlFor="upperThreshold">Upper Threshold</label>
+                      <input value={upperThreshold} onChange={onUpperThresholdChange} type="number" className="form-control" id="upperThreshold" aria-describedby="upperThresholdHelp" placeholder="upperThreshold" />
                     </div>
                   </div>
 
@@ -246,7 +261,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        {!!data.length && <DataTable data={data} threshold={threshold} filtered={filtered} />}
+        {!!data.length && <DataTable data={data} lowerThreshold={lowerThreshold} upperThreshold={upperThreshold} filtered={filtered} />}
       </div>
     </>
   )
