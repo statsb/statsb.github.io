@@ -332,7 +332,7 @@ function Login() {
     }
 
     try {
-      const response = fetch("https://aliveapi.cyclic.app/statsblogin", {
+      const response = await fetch("https://aliveapi.cyclic.app/statsblogin", {
         // const response = await fetch("http://localhost:5000/statsblogin", {
         "headers": {
           "content-type": "application/json",
