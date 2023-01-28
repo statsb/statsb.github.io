@@ -4,14 +4,14 @@ import style from './Theme.module.css'
 
 function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
   return (
-    <table className="table table-hover">
-      <thead>
+    <table className="table table-hover table-sm">
+      <thead className="table-light">
         <tr>
-          <th scope="col">##</th>
-          <th scope="col">buySellRatio</th>
-          <th scope="col">buyVol</th>
-          <th scope="col">sellVol</th>
-          <th scope="col">timestamp</th>
+          <th scope="col" className={style.th}>#</th>
+          <th scope="col" className={style.th}>buySellRatio</th>
+          <th scope="col" className={style.th}>buyVol</th>
+          <th scope="col" className={style.th}>sellVol</th>
+          <th scope="col" className={style.th}>timestamp</th>
         </tr>
       </thead>
       <tbody>
@@ -35,7 +35,9 @@ function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
               </td>
               <td>{buyVol}</td>
               <td>{sellVol}</td>
-              <td>{`${new Date(timestamp).toLocaleTimeString()}, ${new Date(timestamp).toLocaleDateString()}`}</td>
+              <td className="small">
+                {`${new Date(timestamp).toLocaleTimeString().replace(':00 AM', ' am').replace(':00 PM', ' pm')}, ${new Date(timestamp).toLocaleDateString()}`}
+              </td>
             </tr>
           )
         })}
@@ -176,9 +178,9 @@ function Stats({ apikey }: any) {
 
   return (
     <>
-      <nav className="navbar navbar-white bg-white mb-5 p-3">
+      <nav className="navbar navbar-light bg-light mb-5 p-3 shadow-sm">
         <div className="container-fluid">
-          <a className="navbar-brand">ststsb</a>
+          <strong className="navbar-brand">statsb</strong>
           <div className="d-flex">
             <button className="btn btn-dark" onClick={logout}>Logout</button>
           </div>
