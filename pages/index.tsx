@@ -1,4 +1,4 @@
-import { FormEvent, useRef, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import style from './Theme.module.css'
 
 
@@ -44,7 +44,7 @@ function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
   );
 }
 
-export default function Home() {
+function Stats({ apikey }: any) {
   const LOWER_THRESHOLD = 0.8;
   const UPPER_THRESHOLD = 1.2;
 
@@ -144,7 +144,7 @@ export default function Home() {
       setLoading(true);
       const response = await fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${symbol}&period=${period}&limit=${limit}`, {
         headers: {
-          'X-MBX-APIKEY': '1sqj86AlSZsVw19qzAcda7iJ3qbBDX8sZsgob8SEWFBVhFxwK5NcLPDXeZwXryEp'
+          'X-MBX-APIKEY': apikey
         }
       });
       const data = await response.json();
@@ -167,13 +167,23 @@ export default function Home() {
     fetchData();
   }
 
+  const logout = () => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('APIKEY');
+      window.location.reload();
+    }
+  }
+
   return (
     <>
-      <div className="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
-        <h5 className="my-0 mr-md-auto font-weight-normal">
-          <strong>statsb</strong>
-        </h5>
-      </div>
+      <nav className="navbar navbar-white bg-white mb-5 p-3">
+        <div className="container-fluid">
+          <a className="navbar-brand">ststsb</a>
+          <div className="d-flex">
+            <button className="btn btn-dark" onClick={logout}>Logout</button>
+          </div>
+        </div>
+      </nav>
 
       <div className="container">
         <div className="row">
@@ -294,4 +304,130 @@ export default function Home() {
       </div>
     </>
   )
+}
+
+function Login() {
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  const onUsernameChange = (event: FormEvent<HTMLInputElement>) => {
+    setUsername(event.currentTarget.value)
+  }
+
+  const onPasswordChange = (event: FormEvent<HTMLInputElement>) => {
+    setPassword(event.currentTarget.value)
+  }
+
+  const login = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+
+    if (!username || !password) {
+      setError('Username and Password are mandatory!');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = fetch("https://aliveapi.cyclic.app/statsblogin", {
+        // const response = await fetch("http://localhost:5000/statsblogin", {
+        "headers": {
+          "content-type": "application/json",
+        },
+        "body": JSON.stringify({ username, password }),
+        "method": "POST"
+      });
+
+      const { success, error, key } = await (response as any).json();
+
+      if (!success) {
+        setError(error + ', please try again..');
+        return;
+      }
+
+      else if (success && key && typeof window !== 'undefined') {
+        window.localStorage.setItem('APIKEY', key);
+        window.location.reload();
+      }
+    } catch (error: any) {
+      setError(error?.message + ', please try again..');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className={style.mt150 + ' container'}>
+      <div className="row">
+        <div className="col-sm" />
+        <div className="col-sm">
+          <form onSubmit={login}>
+            <div>
+              <label htmlFor="username" className="form-label">Username</label>
+              <input value={username} onChange={onUsernameChange} type="text" className="form-control" id="username" aria-describedby="usernameHelp" />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="password" className="form-label">Password</label>
+              <input value={password} onChange={onPasswordChange} type="password" className="form-control" id="password" />
+            </div>
+
+            <div className="d-grid gap-2 mb-2">
+              <button type="submit" disabled={loading} className="btn btn-warning">Login</button>
+            </div>
+
+            {!!error && (
+              <div className="text-danger">
+                {error}
+              </div>
+            )}
+
+          </form>
+        </div>
+        <div className="col-sm" />
+      </div>
+    </div>
+  )
+}
+
+export default function Home() {
+  const [status, setStatus] = useState<string>('PENDING');
+  const [apikey, setApikey] = useState<string>('');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const APIKEY = localStorage.getItem('APIKEY');
+
+    if (APIKEY) {
+      setApikey(APIKEY);
+      setStatus('LOGGED_IN');
+    }
+    else {
+      setStatus('LOGGED_OUT');
+    }
+  }, [])
+
+  if (status === 'PENDING') {
+    return (
+      <div className="text-center">
+        <div className="spinner-border" role="status">
+          <span className="sr-only"></span>
+        </div>
+      </div>
+    );
+  }
+
+  else if (status === 'LOGGED_OUT') {
+    return <Login />
+  }
+
+  else if (status === 'LOGGED_IN') {
+    return <Stats apikey={apikey} />
+  }
+
+  return null;
 }
