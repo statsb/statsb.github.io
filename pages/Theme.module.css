@@ -30,3 +30,7 @@
 .th {
     font-size: 14px;
 }
+
+.invert {
+    filter: invert(1);
+}
