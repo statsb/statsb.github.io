@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import style from './Theme.module.css'
 
-
 function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
   return (
     <table className="table table-hover table-sm">
@@ -64,10 +63,17 @@ function Stats({ apikey }: any) {
   const timerRef = useRef(0);
   const timeoutRef = useRef<any>(null);
   const [filtered, setFiltered] = useState<boolean>(false);
+  const [notify, setNotify] = useState<boolean>(false);
+  const notifyRef = useRef(false);
   const [data, setData] = useState([]);
 
   const onFilterChange = () => {
     setFiltered(!filtered);
+  }
+
+  const onNotifyChange = () => {
+    notifyRef.current = !notify;
+    setNotify(!notify);
   }
 
   const onSymbolChange = (event: FormEvent<HTMLInputElement>) => {
@@ -123,6 +129,10 @@ function Stats({ apikey }: any) {
     }, step * 1000);
   }
 
+  const playAudio = () => {
+    (document.getElementById('audio') as any)?.play();
+  }
+
   const calculateStats = (data: any) => {
     if (!data || !data.length) {
       return;
@@ -142,6 +152,10 @@ function Stats({ apikey }: any) {
 
     if (typeof document !== 'undefined') {
       document.title = `${symbol} 🔴${lowerHighlightsCount} 🟢${upperHighlightsCount}`
+
+      if (notifyRef.current && (lowerHighlightsCount > 0 || upperHighlightsCount > 0)) {
+        playAudio();
+      }
     }
   }
 
@@ -292,6 +306,12 @@ function Stats({ apikey }: any) {
 
                 <div className="d-flex flex-row-reverse">
                   <div className="form-check pt-5">
+                    <input checked={notify} onChange={onNotifyChange} type="checkbox" className={style.checkbox + ' form-check-input'} id="notify" />
+                    <label className={style.biglabel + ' form-check-label'} htmlFor="filtered">Notify <span className={style.invert}>{notify ? '🔊' : '🔇'}</span></label>
+                  </div>
+                </div>
+                <div className="d-flex flex-row-reverse">
+                  <div className="form-check pt-5">
                     <input checked={filtered} onChange={onFilterChange} type="checkbox" className={style.checkbox + ' form-check-input'} id="filtered" />
                     <label className={style.biglabel + ' form-check-label'} htmlFor="filtered">Filtered</label>
                   </div>
@@ -314,6 +334,7 @@ function Stats({ apikey }: any) {
         )}
         {!!data.length && <DataTable data={data} lowerThreshold={lowerThreshold} upperThreshold={upperThreshold} filtered={filtered} />}
         {!!data && !data.length && (<div className="text-muted">[No data]</div>)}
+        <audio src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_9f35254621.mp3?filename=notification-sound-7062.mp3" id="audio" controls style={{ display: 'none' }} />
       </div>
     </>
   )
