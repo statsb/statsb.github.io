@@ -52,7 +52,7 @@ function Stats({ apikey }: any) {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [symbol, setSymbol] = useState<string>('BTCUSDT');
-  const [period, setPeriod] = useState<string>('15m');
+  const [period, setPeriod] = useState<string>('5m');
   const [limit, setLimit] = useState<number>(100);
   const [lowerThreshold, setLowerThreshold] = useState<number>(LOWER_THRESHOLD);
   const lowerThresholdRef = useRef(LOWER_THRESHOLD);
@@ -123,6 +123,9 @@ function Stats({ apikey }: any) {
   }
 
   const calculateStats = (data: any) => {
+    if (!data || !data.length) {
+      return;
+    }
     let lowerHighlightsCount = 0;
     let upperHighlightsCount = 0;
 
@@ -152,6 +155,9 @@ function Stats({ apikey }: any) {
       const data = await response.json();
       console.log(data);
       setData(data);
+      if (!data || !data.length) {
+        return;
+      }
       updateTimer(true);
       calculateStats(data);
     }
@@ -207,6 +213,8 @@ function Stats({ apikey }: any) {
                     <div className="col form-group mb-3">
                       <label htmlFor="period">Period</label>
                       <select value={period} onChange={onPeriodChange} className="form-control" id="period">
+                        <option>1m</option>
+                        <option>3m</option>
                         <option>5m</option>
                         <option>15m</option>
                         <option>30m</option>
@@ -303,6 +311,7 @@ function Stats({ apikey }: any) {
           </div>
         )}
         {!!data.length && <DataTable data={data} lowerThreshold={lowerThreshold} upperThreshold={upperThreshold} filtered={filtered} />}
+        {!!data && !data.length && (<div className="text-muted">[No data]</div>)}
       </div>
     </>
   )
