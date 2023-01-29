@@ -62,6 +62,7 @@ function Stats({ apikey }: any) {
   const gapRef = useRef(0.5);
   const [timer, setTimer] = useState<number>(0);
   const timerRef = useRef(0);
+  const timeoutRef = useRef<any>(null);
   const [filtered, setFiltered] = useState<boolean>(false);
   const [data, setData] = useState([]);
 
@@ -108,7 +109,7 @@ function Stats({ apikey }: any) {
       setTimer(gapRef.current * 60); // gap is in minutes, timer expects seconds
     }
 
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       const updatedTimer = Math.max(timerRef.current - step, 0);
 
       if (updatedTimer === 0) {
@@ -145,6 +146,7 @@ function Stats({ apikey }: any) {
   }
 
   const fetchData = async () => {
+    clearTimeout(timeoutRef.current);
     try {
       setLoading(true);
       const response = await fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${symbol}&period=${period}&limit=${limit}`, {
