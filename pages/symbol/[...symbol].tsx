@@ -61,7 +61,7 @@ function Stats({ apikey, params }: any) {
     const LOWER_THRESHOLD = 0.8;
     const UPPER_THRESHOLD = 1.2;
 
-    const { _symbol, _period, _limit, _lowerThreshold, _upperThreshold } = params;
+    const { _symbol, _period, _limit, _lowerThreshold, _upperThreshold, _gap, _filtered, _notify } = params;
 
     const [loading, setLoading] = useState<boolean>(false);
     const [symbol, setSymbol] = useState<string>(_symbol ?? 'BTCUSDT');
@@ -71,14 +71,14 @@ function Stats({ apikey, params }: any) {
     const lowerThresholdRef = useRef(_lowerThreshold ?? LOWER_THRESHOLD);
     const [upperThreshold, setUpperThreshold] = useState<number>(_upperThreshold ?? UPPER_THRESHOLD);
     const upperThresholdRef = useRef(_upperThreshold ?? UPPER_THRESHOLD);
-    const [gap, setGap] = useState<number>(5);
-    const gapRef = useRef(5);
+    const [gap, setGap] = useState<number>(_gap ?? 5);
+    const gapRef = useRef(_gap ?? 5);
     const [timer, setTimer] = useState<number>(0);
     const timerRef = useRef(0);
     const timeoutRef = useRef<any>(null);
-    const [filtered, setFiltered] = useState<boolean>(true);
-    const [notify, setNotify] = useState<boolean>(false);
-    const notifyRef = useRef(false);
+    const [filtered, setFiltered] = useState<boolean>(_filtered === '1' ?? true);
+    const [notify, setNotify] = useState<boolean>(_notify === '1' ?? false);
+    const notifyRef = useRef(_notify === '1' ?? false);
     const [data, setData] = useState([]);
 
     const onFilterChange = () => {
@@ -368,8 +368,8 @@ export default function Home() {
     const [status, setStatus] = useState<string>('PENDING');
     const [apikey, setApikey] = useState<string>('');
 
-    const [_symbol, _period, _limit, _lowerThreshold, _upperThreshold] = useParams();
-    const params = { _symbol, _period, _limit, _lowerThreshold, _upperThreshold };
+    const [_symbol, _period, _limit, _lowerThreshold, _upperThreshold, _gap, _filtered, _notify] = useParams();
+    const params = { _symbol, _period, _limit, _lowerThreshold, _upperThreshold, _gap, _filtered, _notify };
 
     useEffect(() => {
         if (typeof window === 'undefined') {
