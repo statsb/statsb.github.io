@@ -46,18 +46,26 @@ function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
     );
 }
 
+const delay = (ms: number) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const useParams = () => {
     const router = useRouter()
     const params = router.query?.symbol as any;
 
+    const updateRoute = ({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify }: any) => {
+        router.replace(`/symbol/${symbol}/${period}/${limit}/${lowerThreshold}/${upperThreshold}/${gap}/${Number(filtered)}/${Number(notify)}`);
+    };
+
     if (params?.length) {
-        return params;
+        return { params, updateRoute };
     }
 
-    return [undefined, undefined, undefined, undefined, undefined];
+    return { params: [undefined, undefined, undefined, undefined, undefined], updateRoute };
 }
 
-function Stats({ apikey, params }: any) {
+function Stats({ apikey, params, updateRoute }: any) {
     const LOWER_THRESHOLD = 0.8;
     const UPPER_THRESHOLD = 1.2;
 
@@ -81,46 +89,64 @@ function Stats({ apikey, params }: any) {
     const notifyRef = useRef(_notify === '1' ?? false);
     const [data, setData] = useState([]);
 
+    const updateUrl = async ([k, v]: any) => {
+        updateRoute({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify, ...{ [k]: v } });
+    };
+
     const onFilterChange = () => {
-        setFiltered(!filtered);
-    }
+        const value = !filtered;
+        setFiltered(value);
+        updateUrl(['filtered', value]);
+    };
 
     const onNotifyChange = () => {
-        notifyRef.current = !notify;
-        setNotify(!notify);
-    }
+        const value = !notify;
+        notifyRef.current = value;
+        setNotify(value);
+        updateUrl(['notify', value]);
+    };
 
     const onSymbolChange = (event: FormEvent<HTMLInputElement>) => {
-        setSymbol(event.currentTarget.value)
-    }
+        const value = event.currentTarget.value;
+        setSymbol(value);
+        updateUrl(['symbol', value]);
+    };
 
     const onPeriodChange = (event: FormEvent<HTMLSelectElement>) => {
-        setPeriod(event.currentTarget.value)
-    }
+        const value = event.currentTarget.value;
+        setPeriod(value);
+        updateUrl(['period', value]);
+    };
 
     const onLowerThresholdChange = (event: FormEvent<HTMLInputElement>) => {
         const value = Number(event.currentTarget.value);
         setLowerThreshold(value);
         lowerThresholdRef.current = value;
-    }
+        updateUrl(['lowerThreshold', value]);
+    };
 
     const onUpperThresholdChange = (event: FormEvent<HTMLInputElement>) => {
         const value = Number(event.currentTarget.value);
         setUpperThreshold(Number(event.currentTarget.value));
         upperThresholdRef.current = value;
-    }
+        updateUrl(['upperThreshold', value]);
+    };
 
     const onGapChange = (event: FormEvent<HTMLSelectElement>) => {
-        setGap(Number(event.currentTarget.value));
-        gapRef.current = Number(event.currentTarget.value);
+        const value = Number(event.currentTarget.value);
+        setGap(value);
+        gapRef.current = value;
 
         timerRef.current = 0;
         setTimer(0);
-    }
+        updateUrl(['gap', value]);
+    };
 
     const onLimitChange = (event: FormEvent<HTMLInputElement>) => {
-        setLimit(Number(event.currentTarget.value))
-    }
+        const value = Number(event.currentTarget.value);
+        setLimit(value);
+        updateUrl(['limit', value]);
+    };
 
     const updateTimer = (reset = false) => {
         const step = 1; // seconds
@@ -171,10 +197,6 @@ function Stats({ apikey, params }: any) {
                 playAudio();
             }
         }
-    }
-
-    const delay = (ms: number) => {
-        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     const fetchData = async () => {
@@ -368,7 +390,9 @@ export default function Home() {
     const [status, setStatus] = useState<string>('PENDING');
     const [apikey, setApikey] = useState<string>('');
 
-    const [_symbol, _period, _limit, _lowerThreshold, _upperThreshold, _gap, _filtered, _notify] = useParams();
+    const { params: paramsArr, updateRoute } = useParams();
+
+    const [_symbol, _period, _limit, _lowerThreshold, _upperThreshold, _gap, _filtered, _notify] = paramsArr;
     const params = { _symbol, _period, _limit, _lowerThreshold, _upperThreshold, _gap, _filtered, _notify };
 
     useEffect(() => {
@@ -402,7 +426,7 @@ export default function Home() {
     }
 
     else if (status === 'LOGGED_IN' && _symbol) {
-        return <Stats apikey={apikey} params={params} />
+        return <Stats apikey={apikey} params={params} updateRoute={updateRoute} />
     }
 
     return null;
