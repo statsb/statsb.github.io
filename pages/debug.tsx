@@ -1,7 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import style from './Theme.module.css'
-// import notify from './audio/notify.mp3'
-
+import style from './Theme.module.css';
+import { useRouter } from 'next/router';
 
 function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
   return (
@@ -27,7 +26,7 @@ function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
           const highlightedClass = isLowerThreshold ? 'danger' : (isUpperThreshold ? 'success' : '');
 
           return (
-            <tr key={index} className={highlightedClass ? `table-${highlightedClass}` : ''}>
+            <tr key={index} className={highlightedClass && !filtered ? `table-${highlightedClass}` : ''}>
               <th scope="row">{index + 1}</th>
               <td>
                 <span className={highlightedClass ? `badge bg-${highlightedClass}` : ''}>
@@ -47,68 +46,107 @@ function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
   );
 }
 
-function Stats({ apikey }: any) {
+const delay = (ms: number) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const useParams = () => {
+  const router = useRouter()
+  const params = router.query?.symbol as any;
+
+  const updateRoute = ({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify }: any) => {
+    router.replace(`/symbol/${symbol}/${period}/${limit}/${lowerThreshold}/${upperThreshold}/${gap}/${Number(filtered)}/${Number(notify)}`);
+  };
+
+  if (params?.length) {
+    return { params, updateRoute };
+  }
+
+  return { params: [undefined, undefined, undefined, undefined, undefined], updateRoute };
+}
+
+function Stats({ apikey, params, updateRoute }: any) {
   const LOWER_THRESHOLD = 0.8;
   const UPPER_THRESHOLD = 1.2;
 
+  const { _symbol, _period, _limit, _lowerThreshold, _upperThreshold, _gap, _filtered, _notify } = params;
+
   const [loading, setLoading] = useState<boolean>(false);
-  const [symbol, setSymbol] = useState<string>('BTCUSDT');
-  const [period, setPeriod] = useState<string>('5m');
-  const [limit, setLimit] = useState<number>(100);
-  const [lowerThreshold, setLowerThreshold] = useState<number>(LOWER_THRESHOLD);
-  const lowerThresholdRef = useRef(LOWER_THRESHOLD);
-  const [upperThreshold, setUpperThreshold] = useState<number>(UPPER_THRESHOLD);
-  const upperThresholdRef = useRef(UPPER_THRESHOLD);
-  const [gap, setGap] = useState<number>(0.5);
-  const gapRef = useRef(0.5);
+  const [symbol, setSymbol] = useState<string>(_symbol ?? 'BTCUSDT');
+  const [period, setPeriod] = useState<string>(_period ?? '5m');
+  const [limit, setLimit] = useState<number>(_limit ?? 30);
+  const [lowerThreshold, setLowerThreshold] = useState<number>(_lowerThreshold ?? LOWER_THRESHOLD);
+  const lowerThresholdRef = useRef(_lowerThreshold ?? LOWER_THRESHOLD);
+  const [upperThreshold, setUpperThreshold] = useState<number>(_upperThreshold ?? UPPER_THRESHOLD);
+  const upperThresholdRef = useRef(_upperThreshold ?? UPPER_THRESHOLD);
+  const [gap, setGap] = useState<number>(_gap ?? 5);
+  const gapRef = useRef(_gap ?? 5);
   const [timer, setTimer] = useState<number>(0);
   const timerRef = useRef(0);
   const timeoutRef = useRef<any>(null);
-  const [filtered, setFiltered] = useState<boolean>(false);
-  const [notify, setNotify] = useState<boolean>(false);
-  const notifyRef = useRef(false);
+  const [filtered, setFiltered] = useState<boolean>(_filtered === '1' ?? true);
+  const [notify, setNotify] = useState<boolean>(_notify === '1' ?? false);
+  const notifyRef = useRef(_notify === '1' ?? false);
   const [data, setData] = useState([]);
 
+  const updateUrl = async ([k, v]: any) => {
+    updateRoute({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify, ...{ [k]: v } });
+  };
+
   const onFilterChange = () => {
-    setFiltered(!filtered);
-  }
+    const value = !filtered;
+    setFiltered(value);
+    updateUrl(['filtered', value]);
+  };
 
   const onNotifyChange = () => {
-    notifyRef.current = !notify;
-    setNotify(!notify);
-  }
+    const value = !notify;
+    notifyRef.current = value;
+    setNotify(value);
+    updateUrl(['notify', value]);
+  };
 
   const onSymbolChange = (event: FormEvent<HTMLInputElement>) => {
-    setSymbol(event.currentTarget.value)
-  }
+    const value = event.currentTarget.value;
+    setSymbol(value);
+    updateUrl(['symbol', value]);
+  };
 
   const onPeriodChange = (event: FormEvent<HTMLSelectElement>) => {
-    setPeriod(event.currentTarget.value)
-  }
+    const value = event.currentTarget.value;
+    setPeriod(value);
+    updateUrl(['period', value]);
+  };
 
   const onLowerThresholdChange = (event: FormEvent<HTMLInputElement>) => {
     const value = Number(event.currentTarget.value);
     setLowerThreshold(value);
     lowerThresholdRef.current = value;
-  }
+    updateUrl(['lowerThreshold', value]);
+  };
 
   const onUpperThresholdChange = (event: FormEvent<HTMLInputElement>) => {
     const value = Number(event.currentTarget.value);
     setUpperThreshold(Number(event.currentTarget.value));
     upperThresholdRef.current = value;
-  }
+    updateUrl(['upperThreshold', value]);
+  };
 
   const onGapChange = (event: FormEvent<HTMLSelectElement>) => {
-    setGap(Number(event.currentTarget.value));
-    gapRef.current = Number(event.currentTarget.value);
+    const value = Number(event.currentTarget.value);
+    setGap(value);
+    gapRef.current = value;
 
     timerRef.current = 0;
     setTimer(0);
-  }
+    updateUrl(['gap', value]);
+  };
 
   const onLimitChange = (event: FormEvent<HTMLInputElement>) => {
-    setLimit(Number(event.currentTarget.value))
-  }
+    const value = Number(event.currentTarget.value);
+    setLimit(value);
+    updateUrl(['limit', value]);
+  };
 
   const updateTimer = (reset = false) => {
     const step = 1; // seconds
@@ -163,8 +201,10 @@ function Stats({ apikey }: any) {
 
   const fetchData = async () => {
     clearTimeout(timeoutRef.current);
+    await delay(0);
     try {
       setLoading(true);
+
       const response = await fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${symbol}&period=${period}&limit=${limit}`, {
         headers: {
           'X-MBX-APIKEY': apikey
@@ -213,7 +253,7 @@ function Stats({ apikey }: any) {
 
       <div className="container">
         <div className="row">
-          <div className="col-sm mb-5">
+          <div className="col-sm-4 mb-5">
             <div className="card">
               <div className="card-body">
                 <h5 className="card-title">Taker Buy/Sell Volume</h5>
@@ -223,7 +263,7 @@ function Stats({ apikey }: any) {
 
                 <form onSubmit={onSubmit}>
                   <div className="row">
-                    <div className="col form-group mb-3">
+                    <div className="col-6 form-group mb-3">
                       <label htmlFor="symbol">Symbol</label>
                       <input value={symbol} onChange={onSymbolChange} type="text" className="form-control" id="symbol" aria-describedby="symbolHelp" placeholder="symbol e.g. BTCUSDT" />
                     </div>
@@ -244,9 +284,7 @@ function Stats({ apikey }: any) {
                         <option>1d</option>
                       </select>
                     </div>
-                  </div>
 
-                  <div className="row">
                     <div className="col form-group mb-3">
                       <label htmlFor="lowerThreshold">Limit</label>
                       <input value={limit} onChange={onLimitChange} type="number" className="form-control" id="limit" aria-describedby="limitHelp" placeholder="limit (30 - 500)" />
@@ -265,172 +303,97 @@ function Stats({ apikey }: any) {
                     </div>
                   </div>
 
-                  <div className="d-grid gap-2">
+                  <div className="d-grid mt-3 mb-5">
                     <button disabled={loading} type="submit" className="btn btn-block btn-warning mb-2">Submit</button>
+                  </div>
+
+                  {!!data?.length && (
+                    <div className="row">
+                      <div className="col-sm mb-3">
+                        <div className="progress" style={{ height: '30px' }}>
+                          <div
+                            className="progress-bar progress-bar-striped progress-bar-animated"
+                            role="progressbar"
+                            aria-valuenow={75}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            style={{ width: `${Math.floor((timer / (gap * 60)) * 100)}%` }}
+                          >
+                            <b className={style.progressFont}>{timer}s</b>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="row">
+                    <div className="col form-group mb-3">
+                      <label htmlFor="gap">Refresh every:</label>
+                      <select value={gap} onChange={onGapChange} className="form-control" id="gap">
+                        <option value={0.5}>30s</option>
+                        <option value={1}>1m</option>
+                        <option value={2}>2m</option>
+                        <option value={3}>3m</option>
+                        <option value={5}>5m</option>
+                        <option value={15}>15m</option>
+                        <option value={30}>30m</option>
+                        <option value={60}>1h</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="col form-group toggle-box">
+                      <label className={'form-check-label'} htmlFor="filtered">Filter</label>
+                      <br />
+                      <input checked={filtered} onChange={onFilterChange} type="checkbox" className={'form-check-input'} id="filtered" />
+                    </div>
+                    <div className="col form-group toggle-box">
+                      <label className={'form-check-label'} htmlFor="filtered">Notify</label>
+                      <br />
+                      <input checked={notify} onChange={onNotifyChange} type="checkbox" className={'form-check-input'} id="notify" />
+                    </div>
                   </div>
 
                 </form>
               </div>
             </div>
           </div>
-          <div className="col-sm mb-5">
-            {!!data.length && (
-              <>
-                <div className="row">
-                  <div className="col form-group mb-3">
-                    <label htmlFor="gap">Make requests every:</label>
-                    <select value={gap} onChange={onGapChange} className="form-control" id="gap">
-                      <option value={0.5}>30s</option>
-                      <option value={1}>1m</option>
-                      <option value={2}>2m</option>
-                      <option value={3}>3m</option>
-                      <option value={5}>5m</option>
-                      <option value={15}>15m</option>
-                      <option value={30}>30m</option>
-                      <option value={60}>1h</option>
-                    </select>
-                  </div>
-                  <div className="col"></div>
-                </div>
-
-
-                next request in <b>({timer}s)</b>:
-                <div className="progress mb-5">
-                  <div
-                    className="progress-bar progress-bar-striped progress-bar-animated"
-                    role="progressbar"
-                    aria-valuenow={75}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    style={{ width: `${Math.floor((timer / (gap * 60)) * 100)}%` }}
-                  />
-                </div>
-
-                <div className="d-flex flex-row-reverse">
-                  <div className="form-check pt-5">
-                    <input checked={notify} onChange={onNotifyChange} type="checkbox" className={style.checkbox + ' form-check-input'} id="notify" />
-                    <label className={style.biglabel + ' form-check-label'} htmlFor="filtered">Notify <span className={style.invert}>{notify ? '🔊' : '🔇'}</span></label>
+          <div className="col-sm-1" />
+          <div className={style.scrollable + ' col-sm-7'}>
+            <div className={style.relative}>
+              {loading && (
+                <div className={style.loader}>
+                  <div className="text-center">
+                    <div className="spinner-border" role="status">
+                      <span className="sr-only"></span>
+                    </div>
                   </div>
                 </div>
-                <div className="d-flex flex-row-reverse">
-                  <div className="form-check pt-5">
-                    <input checked={filtered} onChange={onFilterChange} type="checkbox" className={style.checkbox + ' form-check-input'} id="filtered" />
-                    <label className={style.biglabel + ' form-check-label'} htmlFor="filtered">Filtered</label>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className={style.relative + ' container'}>
-        {loading && (
-          <div className={style.loader}>
-            <div className="text-center">
-              <div className="spinner-border" role="status">
-                <span className="sr-only"></span>
-              </div>
+              )}
+              {!!data.length && <DataTable data={data} lowerThreshold={lowerThreshold} upperThreshold={upperThreshold} filtered={filtered} />}
+              {!!data && !data.length && !loading && (<div className={style.mt100 + ' text-muted text-center'}>[No data]</div>)}
+              <audio src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_9f35254621.mp3?filename=notification-sound-7062.mp3" id="audio" controls style={{ display: 'none' }} />
             </div>
           </div>
-        )}
-        {!!data.length && <DataTable data={data} lowerThreshold={lowerThreshold} upperThreshold={upperThreshold} filtered={filtered} />}
-        {!!data && !data.length && (<div className="text-muted">[No data]</div>)}
-        <audio src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_9f35254621.mp3?filename=notification-sound-7062.mp3" id="audio" controls style={{ display: 'none' }} />
-      </div>
+        </div >
+      </div >
+
+
     </>
   )
 }
 
-function Login() {
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-
-  const onUsernameChange = (event: FormEvent<HTMLInputElement>) => {
-    setUsername(event.currentTarget.value)
-  }
-
-  const onPasswordChange = (event: FormEvent<HTMLInputElement>) => {
-    setPassword(event.currentTarget.value)
-  }
-
-  const login = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError('');
-    setLoading(true);
-
-    if (!username || !password) {
-      setError('Username and Password are mandatory!');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch("https://aliveapi.cyclic.app/statsblogin", {
-        // const response = await fetch("http://localhost:5000/statsblogin", {
-        "headers": {
-          "content-type": "application/json",
-        },
-        "body": JSON.stringify({ username, password }),
-        "method": "POST"
-      });
-
-      const { success, error, key } = await (response as any).json();
-
-      if (!success) {
-        setError(error + ', please try again..');
-        return;
-      }
-
-      else if (success && key && typeof window !== 'undefined') {
-        window.localStorage.setItem('APIKEY', key);
-        window.location.reload();
-      }
-    } catch (error: any) {
-      setError(error?.message + ', please try again..');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className={style.mt150 + ' container'}>
-      <div className="row">
-        <div className="col-sm" />
-        <div className="col-sm">
-          <form onSubmit={login}>
-            <div>
-              <label htmlFor="username" className="form-label">Username</label>
-              <input value={username} onChange={onUsernameChange} type="text" className="form-control" id="username" aria-describedby="usernameHelp" />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="password" className="form-label">Password</label>
-              <input value={password} onChange={onPasswordChange} type="password" className="form-control" id="password" />
-            </div>
-
-            <div className="d-grid gap-2 mb-2">
-              <button type="submit" disabled={loading} className="btn btn-warning">Login</button>
-            </div>
-
-            {!!error && (
-              <div className="text-danger">
-                {error}
-              </div>
-            )}
-
-          </form>
-        </div>
-        <div className="col-sm" />
-      </div>
-    </div>
-  )
-}
-
 export default function Home() {
+  const router = useRouter();
+
   const [status, setStatus] = useState<string>('PENDING');
   const [apikey, setApikey] = useState<string>('');
+
+  const { params: paramsArr, updateRoute } = useParams();
+
+  const [_symbol, _period, _limit, _lowerThreshold, _upperThreshold, _gap, _filtered, _notify] = paramsArr;
+  const params = { _symbol, _period, _limit, _lowerThreshold, _upperThreshold, _gap, _filtered, _notify };
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -458,11 +421,12 @@ export default function Home() {
   }
 
   else if (status === 'LOGGED_OUT') {
-    return <Login />
+    // return <Login />
+    router.replace('/login');
   }
 
-  else if (status === 'LOGGED_IN') {
-    return <Stats apikey={apikey} />
+  else if (status === 'LOGGED_IN' && _symbol) {
+    return <Stats apikey={apikey} params={params} updateRoute={updateRoute} />
   }
 
   return null;
