@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import style from './Theme.module.css'
+import style from './Theme.module.css';
+import { useRouter } from 'next/router';
+
 
 function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
   return (
@@ -264,7 +266,11 @@ function Stats({ apikey }: any) {
                   </div>
 
                   <div className="d-grid gap-2">
-                    <button disabled={loading} type="submit" className="btn btn-block btn-warning mb-2">Submit</button>
+                    <button disabled={loading} type="submit" className="btn btn-block btn-warning mb-2">
+                      {loading ? (
+                        <><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" /> Fetching results..</>
+                      ) : 'Submit'}
+                    </button>
                   </div>
 
                 </form>
@@ -340,93 +346,9 @@ function Stats({ apikey }: any) {
   )
 }
 
-function Login() {
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-
-  const onUsernameChange = (event: FormEvent<HTMLInputElement>) => {
-    setUsername(event.currentTarget.value)
-  }
-
-  const onPasswordChange = (event: FormEvent<HTMLInputElement>) => {
-    setPassword(event.currentTarget.value)
-  }
-
-  const login = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError('');
-    setLoading(true);
-
-    if (!username || !password) {
-      setError('Username and Password are mandatory!');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch("https://aliveapi.cyclic.app/statsblogin", {
-        // const response = await fetch("http://localhost:5000/statsblogin", {
-        "headers": {
-          "content-type": "application/json",
-        },
-        "body": JSON.stringify({ username, password }),
-        "method": "POST"
-      });
-
-      const { success, error, key } = await (response as any).json();
-
-      if (!success) {
-        setError(error + ', please try again..');
-        return;
-      }
-
-      else if (success && key && typeof window !== 'undefined') {
-        window.localStorage.setItem('APIKEY', key);
-        window.location.reload();
-      }
-    } catch (error: any) {
-      setError(error?.message + ', please try again..');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className={style.mt150 + ' container'}>
-      <div className="row">
-        <div className="col-sm" />
-        <div className="col-sm">
-          <form onSubmit={login}>
-            <div>
-              <label htmlFor="username" className="form-label">Username</label>
-              <input value={username} onChange={onUsernameChange} type="text" className="form-control" id="username" aria-describedby="usernameHelp" />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="password" className="form-label">Password</label>
-              <input value={password} onChange={onPasswordChange} type="password" className="form-control" id="password" />
-            </div>
-
-            <div className="d-grid gap-2 mb-2">
-              <button type="submit" disabled={loading} className="btn btn-warning">Login</button>
-            </div>
-
-            {!!error && (
-              <div className="text-danger">
-                {error}
-              </div>
-            )}
-
-          </form>
-        </div>
-        <div className="col-sm" />
-      </div>
-    </div>
-  )
-}
-
 export default function Home() {
+  const router = useRouter();
+
   const [status, setStatus] = useState<string>('PENDING');
   const [apikey, setApikey] = useState<string>('');
 
@@ -456,7 +378,8 @@ export default function Home() {
   }
 
   else if (status === 'LOGGED_OUT') {
-    return <Login />
+    // return <Login />
+    router.replace('/login');
   }
 
   else if (status === 'LOGGED_IN') {
