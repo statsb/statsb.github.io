@@ -52,14 +52,14 @@ const delay = (ms: number) => {
 
 const useParams = () => {
     const router = useRouter()
-    const params = router.query?.symbol as any;
+    const query = router.query?.query as any;
 
     const updateRoute = ({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify }: any) => {
-        router.replace(`/symbol/${symbol}/${period}/${limit}/${lowerThreshold}/${upperThreshold}/${gap}/${Number(filtered)}/${Number(notify)}`);
+        router.replace(`/query/${symbol}_${period}_${limit}_${lowerThreshold}_${upperThreshold}_${gap}_${Number(filtered)}_${Number(notify)}`);
     };
 
-    if (params?.length) {
-        return { params, updateRoute };
+    if (query?.length) {
+        return { params: query.split('_'), updateRoute };
     }
 
     return { params: [undefined, undefined, undefined, undefined, undefined], updateRoute };
