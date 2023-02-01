@@ -30,3 +30,13 @@
 .invert {
     filter: invert(1);
 }
+
+.mt100 {
+    margin-top: 100px;
+}
+
+.progressFont {
+    position: absolute;
+    left: 20px;
+    font-size: 20px;
+}

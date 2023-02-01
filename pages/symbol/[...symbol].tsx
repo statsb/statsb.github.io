@@ -26,7 +26,7 @@ function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
                     const highlightedClass = isLowerThreshold ? 'danger' : (isUpperThreshold ? 'success' : '');
 
                     return (
-                        <tr key={index} className={highlightedClass ? `table-${highlightedClass}` : ''}>
+                        <tr key={index} className={highlightedClass && !filtered ? `table-${highlightedClass}` : ''}>
                             <th scope="row">{index + 1}</th>
                             <td>
                                 <span className={highlightedClass ? `badge bg-${highlightedClass}` : ''}>
@@ -173,10 +173,16 @@ function Stats({ apikey, params }: any) {
         }
     }
 
+    const delay = (ms: number) => {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     const fetchData = async () => {
         clearTimeout(timeoutRef.current);
+        await delay(0);
         try {
             setLoading(true);
+
             const response = await fetch(`https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=${symbol}&period=${period}&limit=${limit}`, {
                 headers: {
                     'X-MBX-APIKEY': apikey
@@ -225,7 +231,7 @@ function Stats({ apikey, params }: any) {
 
             <div className="container">
                 <div className="row">
-                    <div className="col-sm mb-5">
+                    <div className="col-sm-4 mb-5">
                         <div className="card">
                             <div className="card-body">
                                 <h5 className="card-title">Taker Buy/Sell Volume</h5>
@@ -278,82 +284,88 @@ function Stats({ apikey, params }: any) {
                                     </div>
 
                                     <div className="d-grid gap-2">
-                                        <button disabled={loading} type="submit" className="btn btn-block btn-warning mb-2">
-                                            {loading ? (
-                                                <><span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" /> Fetching results..</>
-                                            ) : 'Submit'}
-                                        </button>
+                                        <button disabled={loading} type="submit" className="btn btn-block btn-warning mb-2">Submit</button>
                                     </div>
+
+                                    <hr className="mb-5 mt-5" />
+
+                                    <div className="row">
+                                        <div className="col form-group mb-3">
+                                            <label htmlFor="gap">Make requests every:</label>
+                                            <select value={gap} onChange={onGapChange} className="form-control" id="gap">
+                                                <option value={0.5}>30s</option>
+                                                <option value={1}>1m</option>
+                                                <option value={2}>2m</option>
+                                                <option value={3}>3m</option>
+                                                <option value={5}>5m</option>
+                                                <option value={15}>15m</option>
+                                                <option value={30}>30m</option>
+                                                <option value={60}>1h</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="row mb-3">
+                                        <div className="col-sm form-group pt-3">
+                                            <input checked={filtered} onChange={onFilterChange} type="checkbox" className={'form-check-input'} id="filtered" />
+                                            <label className={'form-check-label'} htmlFor="filtered">Filter</label>
+                                        </div>
+                                        <div className="col-sm form-group pt-3">
+                                            <input checked={notify} onChange={onNotifyChange} type="checkbox" className={'form-check-input'} id="notify" />
+                                            <label className={'form-check-label'} htmlFor="filtered">Notify <span className={style.invert}>{notify ? '🔊' : '🔇'}</span></label>
+                                        </div>
+                                    </div>
+
+                                    {!!data?.length && (
+                                        <div className="row">
+                                            <div className="col-sm">
+                                                <div className="progress" style={{ height: '30px' }}>
+                                                    <div
+                                                        className="progress-bar progress-bar-striped progress-bar-animated"
+                                                        role="progressbar"
+                                                        aria-valuenow={75}
+                                                        aria-valuemin={0}
+                                                        aria-valuemax={100}
+                                                        style={{ width: `${Math.floor((timer / (gap * 60)) * 100)}%` }}
+                                                    >
+                                                        <b className={style.progressFont}>{timer}s</b>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
 
                                 </form>
                             </div>
                         </div>
-                    </div>
-                    <div className="col-sm mb-5">
+
                         {!!data.length && (
                             <>
-                                <div className="row">
-                                    <div className="col form-group mb-3">
-                                        <label htmlFor="gap">Make requests every:</label>
-                                        <select value={gap} onChange={onGapChange} className="form-control" id="gap">
-                                            <option value={0.5}>30s</option>
-                                            <option value={1}>1m</option>
-                                            <option value={2}>2m</option>
-                                            <option value={3}>3m</option>
-                                            <option value={5}>5m</option>
-                                            <option value={15}>15m</option>
-                                            <option value={30}>30m</option>
-                                            <option value={60}>1h</option>
-                                        </select>
-                                    </div>
-                                    <div className="col"></div>
-                                </div>
 
-
-                                next request in <b>({timer}s)</b>:
-                                <div className="progress mb-5">
-                                    <div
-                                        className="progress-bar progress-bar-striped progress-bar-animated"
-                                        role="progressbar"
-                                        aria-valuenow={75}
-                                        aria-valuemin={0}
-                                        aria-valuemax={100}
-                                        style={{ width: `${Math.floor((timer / (gap * 60)) * 100)}%` }}
-                                    />
-                                </div>
-
-                                <div className="d-flex flex-row-reverse">
-                                    <div className="form-check pt-5">
-                                        <input checked={notify} onChange={onNotifyChange} type="checkbox" className={style.checkbox + ' form-check-input'} id="notify" />
-                                        <label className={style.biglabel + ' form-check-label'} htmlFor="filtered">Notify <span className={style.invert}>{notify ? '🔊' : '🔇'}</span></label>
-                                    </div>
-                                </div>
-                                <div className="d-flex flex-row-reverse">
-                                    <div className="form-check pt-5">
-                                        <input checked={filtered} onChange={onFilterChange} type="checkbox" className={style.checkbox + ' form-check-input'} id="filtered" />
-                                        <label className={style.biglabel + ' form-check-label'} htmlFor="filtered">Filtered</label>
-                                    </div>
-                                </div>
                             </>
                         )}
                     </div>
-                </div>
-            </div>
-
-            <div className={style.relative + ' container'}>
-                {loading && (
-                    <div className={style.loader}>
-                        <div className="text-center">
-                            <div className="spinner-border" role="status">
-                                <span className="sr-only"></span>
-                            </div>
+                    <div className="col-sm-1" />
+                    <div className="col-sm-7">
+                        <div className={style.relative}>
+                            {loading && (
+                                <div className={style.loader}>
+                                    <div className="text-center">
+                                        <div className="spinner-border" role="status">
+                                            <span className="sr-only"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {!!data.length && <DataTable data={data} lowerThreshold={lowerThreshold} upperThreshold={upperThreshold} filtered={filtered} />}
+                            {!!data && !data.length && !loading && (<div className={style.mt100 + ' text-muted text-center'}>[No data]</div>)}
+                            <audio src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_9f35254621.mp3?filename=notification-sound-7062.mp3" id="audio" controls style={{ display: 'none' }} />
                         </div>
                     </div>
-                )}
-                {!!data.length && <DataTable data={data} lowerThreshold={lowerThreshold} upperThreshold={upperThreshold} filtered={filtered} />}
-                {!!data && !data.length && (<div className="text-muted">[No data]</div>)}
-                <audio src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_9f35254621.mp3?filename=notification-sound-7062.mp3" id="audio" controls style={{ display: 'none' }} />
-            </div>
+                </div >
+            </div >
+
+
         </>
     )
 }
