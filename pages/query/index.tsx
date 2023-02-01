@@ -52,14 +52,17 @@ const delay = (ms: number) => {
 
 const useParams = () => {
     const router = useRouter()
-    const query = router.query?.query as any;
+    const query = router.asPath.split('/query#/')[1];
+
+    console.log(query);
 
     const updateRoute = ({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify }: any) => {
-        router.replace(`/query/${symbol}_${period}_${limit}_${lowerThreshold}_${upperThreshold}_${gap}_${Number(filtered)}_${Number(notify)}`);
+        history.replaceState({}, '', `/query#/${symbol}/${period}/${limit}/${lowerThreshold}/${upperThreshold}/${gap}/${Number(filtered)}/${Number(notify)}`);
     };
 
     if (query?.length) {
-        return { params: query.split('_'), updateRoute };
+        const params = query.split('/')
+        return { params, updateRoute };
     }
 
     return { params: [undefined, undefined, undefined, undefined, undefined], updateRoute };
