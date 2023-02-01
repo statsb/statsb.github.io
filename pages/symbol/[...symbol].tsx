@@ -283,15 +283,13 @@ function Stats({ apikey, params }: any) {
                                         </div>
                                     </div>
 
-                                    <div className="d-grid gap-2">
+                                    <div className="d-grid mt-3">
                                         <button disabled={loading} type="submit" className="btn btn-block btn-warning mb-2">Submit</button>
                                     </div>
 
-                                    <hr className="mb-5 mt-5" />
-
                                     <div className="row">
-                                        <div className="col form-group mb-3">
-                                            <label htmlFor="gap">Make requests every:</label>
+                                        <div className="col form-group mt-5 mb-2">
+                                            <label htmlFor="gap">Refresh every:</label>
                                             <select value={gap} onChange={onGapChange} className="form-control" id="gap">
                                                 <option value={0.5}>30s</option>
                                                 <option value={1}>1m</option>
@@ -305,20 +303,22 @@ function Stats({ apikey, params }: any) {
                                         </div>
                                     </div>
 
-                                    <div className="row mb-3">
-                                        <div className="col-sm form-group pt-3">
-                                            <input checked={filtered} onChange={onFilterChange} type="checkbox" className={'form-check-input'} id="filtered" />
+                                    <div className="row">
+                                        <div className="col-sm form-group pt-3 toggle-box">
                                             <label className={'form-check-label'} htmlFor="filtered">Filter</label>
+                                            <br />
+                                            <input checked={filtered} onChange={onFilterChange} type="checkbox" className={'form-check-input'} id="filtered" />
                                         </div>
-                                        <div className="col-sm form-group pt-3">
+                                        <div className="col-sm form-group pt-3 toggle-box">
+                                            <label className={'form-check-label'} htmlFor="filtered">Notify</label>
+                                            <br />
                                             <input checked={notify} onChange={onNotifyChange} type="checkbox" className={'form-check-input'} id="notify" />
-                                            <label className={'form-check-label'} htmlFor="filtered">Notify <span className={style.invert}>{notify ? '🔊' : '🔇'}</span></label>
                                         </div>
                                     </div>
 
                                     {!!data?.length && (
                                         <div className="row">
-                                            <div className="col-sm">
+                                            <div className="col-sm pt-5">
                                                 <div className="progress" style={{ height: '30px' }}>
                                                     <div
                                                         className="progress-bar progress-bar-striped progress-bar-animated"
@@ -338,15 +338,9 @@ function Stats({ apikey, params }: any) {
                                 </form>
                             </div>
                         </div>
-
-                        {!!data.length && (
-                            <>
-
-                            </>
-                        )}
                     </div>
                     <div className="col-sm-1" />
-                    <div className="col-sm-7">
+                    <div className={style.scrollable + ' col-sm-7'}>
                         <div className={style.relative}>
                             {loading && (
                                 <div className={style.loader}>
