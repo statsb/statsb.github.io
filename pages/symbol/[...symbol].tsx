@@ -241,7 +241,7 @@ function Stats({ apikey, params }: any) {
 
                                 <form onSubmit={onSubmit}>
                                     <div className="row">
-                                        <div className="col form-group mb-3">
+                                        <div className="col-6 form-group mb-3">
                                             <label htmlFor="symbol">Symbol</label>
                                             <input value={symbol} onChange={onSymbolChange} type="text" className="form-control" id="symbol" aria-describedby="symbolHelp" placeholder="symbol e.g. BTCUSDT" />
                                         </div>
@@ -262,9 +262,7 @@ function Stats({ apikey, params }: any) {
                                                 <option>1d</option>
                                             </select>
                                         </div>
-                                    </div>
 
-                                    <div className="row">
                                         <div className="col form-group mb-3">
                                             <label htmlFor="lowerThreshold">Limit</label>
                                             <input value={limit} onChange={onLimitChange} type="number" className="form-control" id="limit" aria-describedby="limitHelp" placeholder="limit (30 - 500)" />
@@ -283,42 +281,13 @@ function Stats({ apikey, params }: any) {
                                         </div>
                                     </div>
 
-                                    <div className="d-grid mt-3">
+                                    <div className="d-grid mt-3 mb-5">
                                         <button disabled={loading} type="submit" className="btn btn-block btn-warning mb-2">Submit</button>
-                                    </div>
-
-                                    <div className="row">
-                                        <div className="col form-group mt-5 mb-2">
-                                            <label htmlFor="gap">Refresh every:</label>
-                                            <select value={gap} onChange={onGapChange} className="form-control" id="gap">
-                                                <option value={0.5}>30s</option>
-                                                <option value={1}>1m</option>
-                                                <option value={2}>2m</option>
-                                                <option value={3}>3m</option>
-                                                <option value={5}>5m</option>
-                                                <option value={15}>15m</option>
-                                                <option value={30}>30m</option>
-                                                <option value={60}>1h</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div className="row">
-                                        <div className="col-sm form-group pt-3 toggle-box">
-                                            <label className={'form-check-label'} htmlFor="filtered">Filter</label>
-                                            <br />
-                                            <input checked={filtered} onChange={onFilterChange} type="checkbox" className={'form-check-input'} id="filtered" />
-                                        </div>
-                                        <div className="col-sm form-group pt-3 toggle-box">
-                                            <label className={'form-check-label'} htmlFor="filtered">Notify</label>
-                                            <br />
-                                            <input checked={notify} onChange={onNotifyChange} type="checkbox" className={'form-check-input'} id="notify" />
-                                        </div>
                                     </div>
 
                                     {!!data?.length && (
                                         <div className="row">
-                                            <div className="col-sm pt-5">
+                                            <div className="col-sm mb-3">
                                                 <div className="progress" style={{ height: '30px' }}>
                                                     <div
                                                         className="progress-bar progress-bar-striped progress-bar-animated"
@@ -334,6 +303,35 @@ function Stats({ apikey, params }: any) {
                                             </div>
                                         </div>
                                     )}
+
+                                    <div className="row">
+                                        <div className="col form-group mb-3">
+                                            <label htmlFor="gap">Refresh every:</label>
+                                            <select value={gap} onChange={onGapChange} className="form-control" id="gap">
+                                                <option value={0.5}>30s</option>
+                                                <option value={1}>1m</option>
+                                                <option value={2}>2m</option>
+                                                <option value={3}>3m</option>
+                                                <option value={5}>5m</option>
+                                                <option value={15}>15m</option>
+                                                <option value={30}>30m</option>
+                                                <option value={60}>1h</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="row">
+                                        <div className="col form-group toggle-box">
+                                            <label className={'form-check-label'} htmlFor="filtered">Filter</label>
+                                            <br />
+                                            <input checked={filtered} onChange={onFilterChange} type="checkbox" className={'form-check-input'} id="filtered" />
+                                        </div>
+                                        <div className="col form-group toggle-box">
+                                            <label className={'form-check-label'} htmlFor="filtered">Notify</label>
+                                            <br />
+                                            <input checked={notify} onChange={onNotifyChange} type="checkbox" className={'form-check-input'} id="notify" />
+                                        </div>
+                                    </div>
 
                                 </form>
                             </div>

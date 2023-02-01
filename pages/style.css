@@ -13642,10 +13642,6 @@ fieldset:disabled .btn {
 
 /*********************** checkbox ****************************/
 
-/* .toggle-box {
-    transform: scale(2);
-} */
-
 .toggle-box input[type="checkbox"] {
     position: relative;
     appearance: none;
@@ -13659,7 +13655,7 @@ fieldset:disabled .btn {
 }
 
 .toggle-box input:checked[type="checkbox"] {
-    background: #7da6ff;
+    background: #0d6efd;
 }
 
 .toggle-box input[type="checkbox"]::after {
