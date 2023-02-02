@@ -331,7 +331,7 @@ function Stats({ apikey, params, updateRoute }: any) {
 
                                     <div className="row">
                                         <div className="col form-group mb-3">
-                                            <label htmlFor="gap">Refresh every:</label>
+                                            <label htmlFor="gap">Refresh interval:</label>
                                             <select value={gap} onChange={onGapChange} className="form-control" id="gap">
                                                 <option value={0.5}>30s</option>
                                                 <option value={1}>1m</option>
