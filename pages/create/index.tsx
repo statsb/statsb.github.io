@@ -252,6 +252,7 @@ export default function Home() {
         if (typeof window === 'undefined') {
             return;
         }
+        document.title = 'CREATE';
         const APIKEY = localStorage.getItem('APIKEY');
 
         if (APIKEY) {
