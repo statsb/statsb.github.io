@@ -247,7 +247,7 @@ function Stats({ apikey, params, updateRoute }: any) {
         <>
             <nav className="navbar navbar-dark bg-dark mb-5 p-3 shadow-sm">
                 <div className="container-fluid">
-                    {/* <strong className="navbar-brand">statsb.github.io</strong> */}
+                    <strong className="navbar-brand"></strong>
                     <div className="d-flex">
                         <button className="btn btn-outline-warning" onClick={logout}>Logout</button>
                     </div>
