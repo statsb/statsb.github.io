@@ -95,7 +95,7 @@ function QueryTable() {
         <>
             <nav className="navbar navbar-dark bg-dark mb-5 p-3 shadow-sm">
                 <div className="container-fluid">
-                    <strong className="navbar-brand"></strong>
+                    <strong className="navbar-brand">teamCryptoWhale</strong>
                     <div className="d-flex">
                         <button className="btn btn-outline-warning" onClick={logout}>Logout</button>
                     </div>
@@ -113,8 +113,8 @@ function QueryTable() {
                                     <th scope="col">Symbol</th>
                                     <th scope="col">Period</th>
                                     <th scope="col">Limit</th>
-                                    <th scope="col">Lower Threshold</th>
-                                    <th scope="col">Upper Threshold</th>
+                                    <th scope="col">LT</th>
+                                    <th scope="col">UT</th>
                                     <th scope="col">Refresh Interval</th>
                                     <th scope="col">Filtered</th>
                                     <th scope="col">Notify</th>

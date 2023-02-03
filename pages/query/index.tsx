@@ -247,7 +247,7 @@ function Stats({ apikey, params, updateRoute }: any) {
         <>
             <nav className="navbar navbar-dark bg-dark mb-5 p-3 shadow-sm">
                 <div className="container-fluid">
-                    <strong className="navbar-brand"></strong>
+                    <strong className="navbar-brand">teamCryptoWhale</strong>
                     <div className="d-flex">
                         <button className="btn btn-outline-warning" onClick={logout}>Logout</button>
                     </div>
@@ -296,12 +296,12 @@ function Stats({ apikey, params, updateRoute }: any) {
 
                                     <div className="row">
                                         <div className="col form-group mb-3">
-                                            <label htmlFor="lowerThreshold">Lower Threshold</label>
+                                            <label htmlFor="lowerThreshold">LT</label>
                                             <input value={lowerThreshold} onChange={onLowerThresholdChange} type="number" className="form-control" id="lowerThreshold" aria-describedby="lowerThresholdHelp" placeholder="lowerThreshold" />
                                         </div>
 
                                         <div className="col form-group mb-3">
-                                            <label htmlFor="upperThreshold">Upper Threshold</label>
+                                            <label htmlFor="upperThreshold">UT</label>
                                             <input value={upperThreshold} onChange={onUpperThresholdChange} type="number" className="form-control" id="upperThreshold" aria-describedby="upperThresholdHelp" placeholder="upperThreshold" />
                                         </div>
                                     </div>
