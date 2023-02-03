@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 
 
@@ -6,6 +6,8 @@ function QueryTable() {
     const [data, setData] = useState([{
         symbol: 'BTCUSDT', period: '5m', limit: 30, lowerThreshold: 0.8, upperThreshold: 1.2, gap: 5, filtered: true, notify: false
     }]);
+    const windowsRef = useRef<any>([]);
+    const [closeEnabled, setCloseEnabled] = useState<boolean>(false);
 
     const syncData = (data: any) => {
         localStorage.setItem('QUERY_ARRAY', JSON.stringify(data));
@@ -59,17 +61,34 @@ function QueryTable() {
     }
 
     const start = () => {
-        // let urls: any = [];
+        if (windowsRef.current?.length > 100) {
+            windowsRef.current = [];
+        }
 
         data.forEach(({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify }: any) => {
             if (!symbol || !lowerThreshold || !upperThreshold) {
                 return;
             }
-            window.open(`/query#/${symbol}/${period}/${limit}/${lowerThreshold}/${upperThreshold}/${gap}/${Number(filtered)}/${Number(notify)}`, '_blank');
+            const windowRef = window.open(`/query#/${symbol}/${period}/${limit}/${lowerThreshold}/${upperThreshold}/${gap}/${Number(filtered)}/${Number(notify)}`, '_blank');
             // console.log(`/query#/${symbol}/${period}/${limit}/${lowerThreshold}/${upperThreshold}/${gap}/${Number(filtered)}/${Number(notify)}`, '_blank');
+            windowsRef.current.push(windowRef);
         });
 
-        // console.log(urls);
+        setCloseEnabled(true);
+    };
+
+    const closeAll = () => {
+        console.log(windowsRef.current);
+        if (!windowsRef.current?.length) {
+            return;
+        }
+
+        windowsRef.current.forEach((windowRef: any) => {
+            windowRef?.close();
+        });
+
+        setCloseEnabled(false);
+        console.log(windowsRef.current);
     };
 
     return (
@@ -212,6 +231,12 @@ function QueryTable() {
 
                 <div className="text-center mt-5">
                     <button onClick={start} type="button" disabled={!data?.length} className="btn btn-primary btn-lg"><b>Start Monitoring 🚀</b></button>
+
+                    {closeEnabled && (
+                        <div className="mt-5">
+                            <button onClick={closeAll} disabled={!data?.length} className="btn btn-link"><b>close all open windows</b></button>
+                        </div>
+                    )}
                 </div>
             </div>
         </>
