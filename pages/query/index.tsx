@@ -259,7 +259,7 @@ function Stats({ apikey, params, updateRoute }: any) {
                     <div className="col-sm-4 mb-5">
                         <div className="card">
                             <div className="card-body">
-                                <h5 className="card-title">Taker Buy/Sell Volume</h5>
+                                {/* <h5 className="card-title">Taker Buy/Sell Volume</h5> */}
                                 {/* <h6 className="card-subtitle mb-4 text-muted">
                                     <code>GET /futures/data/takerlongshortRatio</code>
                                 </h6> */}
