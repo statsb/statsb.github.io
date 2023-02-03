@@ -7,20 +7,48 @@ function QueryTable() {
         symbol: 'BTCUSDT', period: '5m', limit: 30, lowerThreshold: 0.8, upperThreshold: 1.2, gap: 5, filtered: true, notify: false
     }]);
 
+    const syncData = (data: any) => {
+        localStorage.setItem('QUERY_ARRAY', JSON.stringify(data));
+    };
+
+    const saveData = (data: any) => {
+        setData(data);
+        syncData(data);
+    }
+
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        const dataString = localStorage.getItem('QUERY_ARRAY');
+
+        if (dataString) {
+            const savedData = JSON.parse(dataString);
+            setData(savedData);
+        }
+    }, []);
+
     const addRow = () => {
         const dataClone = JSON.parse(JSON.stringify(data));
-        dataClone.push({
+        dataClone.unshift({
             symbol: '', period: '5m', limit: 30, lowerThreshold: '', upperThreshold: '', gap: 5, filtered: true, notify: false
         });
 
-        setData(dataClone);
+        saveData(dataClone);
     };
+
+    const deleteRow = (index: number) => {
+        const dataClone = JSON.parse(JSON.stringify(data));
+        dataClone.splice(index, 1);
+
+        saveData(dataClone);
+    }
 
     const onChange = (index: number, key: string, value: any) => {
         const dataClone = JSON.parse(JSON.stringify(data));
 
         dataClone[index][key] = value;
-        setData(dataClone);
+        saveData(dataClone);
     };
 
     const logout = () => {
@@ -56,9 +84,6 @@ function QueryTable() {
             </nav>
 
             <div className="container">
-                <div className="d-flex flex-row-reverse mb-4">
-                    <button onClick={addRow} type="button" className="btn btn-outline-dark">➕ <b>Add row</b></button>
-                </div>
 
                 <div className="row">
                     <div className="col">
@@ -74,6 +99,13 @@ function QueryTable() {
                                     <th scope="col">Refresh Interval</th>
                                     <th scope="col">Filtered</th>
                                     <th scope="col">Notify</th>
+                                    <th scope="col">
+                                        <div className="d-flex flex-row-reverse">
+                                            <button onClick={addRow} type="button" className="btn btn-outline-dark btn-sm">
+                                                <span dangerouslySetInnerHTML={{ __html: '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.com/svgjs" width="19" height="19" x="0" y="0" viewBox="0 0 469.333 469.333" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><g fill="#4caf50"><path d="M437.332 192H32c-17.664 0-32 14.336-32 32v21.332c0 17.664 14.336 32 32 32h405.332c17.664 0 32-14.336 32-32V224c0-17.664-14.336-32-32-32zm0 0" fill="#4caf50" data-original="#4caf50" class=""></path><path d="M192 32v405.332c0 17.664 14.336 32 32 32h21.332c17.664 0 32-14.336 32-32V32c0-17.664-14.336-32-32-32H224c-17.664 0-32 14.336-32 32zm0 0" fill="#4caf50" data-original="#4caf50" class=""></path></g></g></svg>' }} />
+                                            </button>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,16 +188,30 @@ function QueryTable() {
                                                     }} type="checkbox" className={'form-check-input'} id="notify" />
                                                 </div>
                                             </td>
+                                            <td>
+                                                <div className="d-flex flex-row-reverse">
+                                                    <button onClick={() => deleteRow(index)} type="button" className="btn btn-outline-dark btn-sm">❌</button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     );
                                 })}
+                                {/* <tr>
+                                    <td colSpan={10} style={{ borderBottom: 'none' }}>
+                                        <div className="d-flex flex-row-reverse">
+                                            <button onClick={addRow} type="button" className="btn btn-outline-dark btn-sm">
+                                                <span dangerouslySetInnerHTML={{ __html: '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.com/svgjs" width="19" height="19" x="0" y="0" viewBox="0 0 469.333 469.333" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><g fill="#4caf50"><path d="M437.332 192H32c-17.664 0-32 14.336-32 32v21.332c0 17.664 14.336 32 32 32h405.332c17.664 0 32-14.336 32-32V224c0-17.664-14.336-32-32-32zm0 0" fill="#4caf50" data-original="#4caf50" class=""></path><path d="M192 32v405.332c0 17.664 14.336 32 32 32h21.332c17.664 0 32-14.336 32-32V32c0-17.664-14.336-32-32-32H224c-17.664 0-32 14.336-32 32zm0 0" fill="#4caf50" data-original="#4caf50" class=""></path></g></g></svg>' }} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr> */}
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div className="d-flex flex-row-reverse mt-5">
-                    <button onClick={start} type="button" className="btn btn-primary"><b>Start Monitoring 🚀</b></button>
+                <div className="text-center mt-5">
+                    <button onClick={start} type="button" disabled={!data?.length} className="btn btn-primary btn-lg"><b>Start Monitoring 🚀</b></button>
                 </div>
             </div>
         </>
