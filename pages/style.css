@@ -13683,3 +13683,7 @@ fieldset:disabled .btn {
 .mr-50 {
     margin-right: 50px;
 }
+
+nav a {
+    text-decoration: none;
+}

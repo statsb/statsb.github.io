@@ -109,7 +109,7 @@ function QueryTable() {
         <>
             <nav className="navbar navbar-dark bg-dark mb-5 p-3 shadow-sm">
                 <div className="container-fluid">
-                    <strong className="navbar-brand">TEAM CRYPTO WHALE</strong>
+                    <a href="/"><strong className="navbar-brand">TEAM CRYPTO WHALE</strong></a>
                     <div className="d-flex">
                         <div className="form-group toggle-box mr-50">
                             {/* <span className="btn btn-outline-secondary"> */}
