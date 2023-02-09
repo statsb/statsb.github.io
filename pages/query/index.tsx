@@ -26,7 +26,7 @@ function DataTable({ data, lowerThreshold, upperThreshold, filtered, darkTheme }
                     const highlightedClass = isLowerThreshold ? 'danger' : (isUpperThreshold ? 'success' : '');
 
                     return (
-                        <tr key={index} className={highlightedClass ? `table-${highlightedClass}` : ''}>
+                        <tr key={index} className={!darkTheme && highlightedClass ? `table-${highlightedClass}` : ''}>
                             <th scope="row">{index + 1}</th>
                             <td>
                                 <span className={highlightedClass ? `badge bg-${highlightedClass}` : ''}>
