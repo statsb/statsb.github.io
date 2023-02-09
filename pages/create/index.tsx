@@ -28,7 +28,6 @@ function QueryTable() {
     };
 
     useEffect(() => {
-        console.log('udbhav')
         if (typeof window === 'undefined') {
             return;
         }
@@ -278,7 +277,7 @@ export default function Home() {
         if (typeof window === 'undefined') {
             return;
         }
-        document.title = 'TEAM CRYPTO WHALE';
+        // document.title = 'TEAM CRYPTO WHALE';
         const APIKEY = localStorage.getItem('APIKEY');
 
         if (APIKEY) {

@@ -101,6 +101,18 @@ function Stats({ apikey, params, updateRoute }: any) {
         }
     };
 
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return;
+        }
+        const DARK_THEME = localStorage.getItem('DARK_THEME');
+
+        if (DARK_THEME === '1') {
+            setDarkTheme(true);
+            updateTheme(true);
+        }
+    }, []);
+
     const updateUrl = async ([k, v]: any) => {
         updateRoute({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify, ...{ [k]: v } });
     };
