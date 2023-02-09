@@ -13645,7 +13645,7 @@ fieldset:disabled .btn {
 .toggle-box input[type="checkbox"] {
     position: relative;
     appearance: none;
-    width: 60px;
+    width: 52px;
     height: 30px;
     background: #ccc;
     border-radius: 50px;
@@ -13661,8 +13661,8 @@ fieldset:disabled .btn {
 .toggle-box input[type="checkbox"]::after {
     position: absolute;
     content: "";
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
     top: 0;
     left: 0;
     background: #fff;
@@ -13674,4 +13674,12 @@ fieldset:disabled .btn {
 
 .toggle-box input:checked[type="checkbox"]::after {
     left: 50%;
+}
+
+.invert {
+    filter: invert(1);
+}
+
+.mr-50 {
+    margin-right: 50px;
 }

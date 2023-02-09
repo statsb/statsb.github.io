@@ -2,10 +2,10 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import style from './Theme.module.css';
 import { useRouter } from 'next/router';
 
-function DataTable({ data, lowerThreshold, upperThreshold, filtered }: any) {
+function DataTable({ data, lowerThreshold, upperThreshold, filtered, darkTheme }: any) {
     return (
-        <table className="table table-hover table-sm">
-            <thead className="table-light">
+        <table className={`table table-hover table-sm ${darkTheme ? 'table-dark' : ''}`}>
+            <thead>
                 <tr>
                     <th scope="col" className={style.th}>#</th>
                     <th scope="col" className={style.th}>buySellRatio</th>
@@ -91,6 +91,15 @@ function Stats({ apikey, params, updateRoute }: any) {
     const [notify, setNotify] = useState<boolean>(_notify === '1' ?? false);
     const notifyRef = useRef(_notify === '1' ?? false);
     const [data, setData] = useState([]);
+    const [darkTheme, setDarkTheme] = useState<boolean>(false);
+
+    const updateTheme = (darkTheme = false) => {
+        if (darkTheme) {
+            document.body.setAttribute('data-bs-theme', 'dark');
+        } else {
+            document.body.removeAttribute('data-bs-theme');
+        }
+    };
 
     const updateUrl = async ([k, v]: any) => {
         updateRoute({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify, ...{ [k]: v } });
@@ -247,8 +256,17 @@ function Stats({ apikey, params, updateRoute }: any) {
         <>
             <nav className="navbar navbar-dark bg-dark mb-5 p-3 shadow-sm">
                 <div className="container-fluid">
-                    <strong className="navbar-brand">teamCryptoWhale</strong>
+                    <strong className="navbar-brand">TEAM CRYPTO WHALE</strong>
                     <div className="d-flex">
+                        <div className="form-group toggle-box mr-50">
+                            <span className="fs-5 p-1">🔆</span>
+                            <input checked={darkTheme} onChange={(e) => {
+                                updateTheme(!darkTheme);
+                                localStorage.setItem('DARK_THEME', darkTheme ? '0' : '1');
+                                setDarkTheme(!darkTheme);
+                            }} type="checkbox" className="form-check-input" id="darkTheme" />
+                            <span className="fs-5 p-1 invert">🌙</span>
+                        </div>
                         <button className="btn btn-outline-warning" onClick={logout}>Logout</button>
                     </div>
                 </div>
@@ -374,7 +392,7 @@ function Stats({ apikey, params, updateRoute }: any) {
                                     </div>
                                 </div>
                             )}
-                            {!!data.length && <DataTable data={data} lowerThreshold={lowerThreshold} upperThreshold={upperThreshold} filtered={filtered} />}
+                            {!!data.length && <DataTable darkTheme={darkTheme} data={data} lowerThreshold={lowerThreshold} upperThreshold={upperThreshold} filtered={filtered} />}
                             {!!data && !data.length && !loading && (<div className={style.mt100 + ' text-muted text-center'}>[No data]</div>)}
                             <audio src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_9f35254621.mp3?filename=notification-sound-7062.mp3" id="audio" controls style={{ display: 'none' }} />
                         </div>

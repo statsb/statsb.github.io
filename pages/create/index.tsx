@@ -8,6 +8,7 @@ function QueryTable() {
     }]);
     const windowsRef = useRef<any>([]);
     const [closeEnabled, setCloseEnabled] = useState<boolean>(false);
+    const [darkTheme, setDarkTheme] = useState<boolean>(false);
 
     const syncData = (data: any) => {
         localStorage.setItem('QUERY_ARRAY', JSON.stringify(data));
@@ -18,15 +19,31 @@ function QueryTable() {
         syncData(data);
     }
 
+    const updateTheme = (darkTheme = false) => {
+        if (darkTheme) {
+            document.body.setAttribute('data-bs-theme', 'dark');
+        } else {
+            document.body.removeAttribute('data-bs-theme');
+        }
+    };
+
     useEffect(() => {
+        console.log('udbhav')
         if (typeof window === 'undefined') {
             return;
         }
         const dataString = localStorage.getItem('QUERY_ARRAY');
+        const DARK_THEME = localStorage.getItem('DARK_THEME');
+
 
         if (dataString) {
             const savedData = JSON.parse(dataString);
             setData(savedData);
+        }
+
+        if (DARK_THEME === '1') {
+            setDarkTheme(true);
+            updateTheme(true);
         }
     }, []);
 
@@ -78,7 +95,6 @@ function QueryTable() {
     };
 
     const closeAll = () => {
-        console.log(windowsRef.current);
         if (!windowsRef.current?.length) {
             return;
         }
@@ -88,15 +104,25 @@ function QueryTable() {
         });
 
         setCloseEnabled(false);
-        console.log(windowsRef.current);
     };
 
     return (
         <>
             <nav className="navbar navbar-dark bg-dark mb-5 p-3 shadow-sm">
                 <div className="container-fluid">
-                    <strong className="navbar-brand">teamCryptoWhale</strong>
+                    <strong className="navbar-brand">TEAM CRYPTO WHALE</strong>
                     <div className="d-flex">
+                        <div className="form-group toggle-box mr-50">
+                            {/* <span className="btn btn-outline-secondary"> */}
+                            <span className="fs-5 p-1">🔆</span>
+                            <input checked={darkTheme} onChange={(e) => {
+                                updateTheme(!darkTheme);
+                                localStorage.setItem('DARK_THEME', darkTheme ? '0' : '1');
+                                setDarkTheme(!darkTheme);
+                            }} type="checkbox" className="form-check-input" id="darkTheme" />
+                            <span className="fs-5 p-1 invert">🌙</span>
+                            {/* </span> */}
+                        </div>
                         <button className="btn btn-outline-warning" onClick={logout}>Logout</button>
                     </div>
                 </div>
@@ -106,8 +132,8 @@ function QueryTable() {
 
                 <div className="row">
                     <div className="col">
-                        <table className="table table-lg">
-                            <thead className="table-light">
+                        <table className={`table table-lg ${darkTheme ? 'table-dark' : ''}`}>
+                            <thead>
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">Symbol</th>
@@ -131,7 +157,7 @@ function QueryTable() {
                                 {data.map(({ symbol, period, limit, lowerThreshold, upperThreshold, gap, filtered, notify }, index) => {
                                     return (
                                         <tr key={index}>
-                                            <th scope="row">{symbol && lowerThreshold && upperThreshold ? '✅' : ''}</th>
+                                            <th scope="row">{index + 1}{symbol && lowerThreshold && upperThreshold ? '✅' : ''}</th>
                                             <td>
                                                 <div className="form-group" style={{ maxWidth: '150px' }}>
                                                     <input value={symbol} onChange={(e) => {
@@ -164,14 +190,14 @@ function QueryTable() {
                                                 </div>
                                             </td>
                                             <td>
-                                                <div className="form-group" style={{ maxWidth: '150px' }}>
+                                                <div className="form-group" style={{ maxWidth: '70px' }}>
                                                     <input value={lowerThreshold} onChange={(e) => {
                                                         onChange(index, 'lowerThreshold', e.target.value);
                                                     }} type="text" className="form-control" id="lowerThreshold" aria-describedby="lowerThresholdHelp" placeholder="e.g. 0.8" />
                                                 </div>
                                             </td>
                                             <td>
-                                                <div className="form-group" style={{ maxWidth: '150px' }}>
+                                                <div className="form-group" style={{ maxWidth: '70px' }}>
                                                     <input value={upperThreshold} onChange={(e) => {
                                                         onChange(index, 'upperThreshold', e.target.value);
                                                     }} type="text" className="form-control" id="upperThreshold" aria-describedby="upperThresholdHelp" placeholder="e.g. 1.2" />
@@ -252,7 +278,7 @@ export default function Home() {
         if (typeof window === 'undefined') {
             return;
         }
-        document.title = 'CREATE';
+        document.title = 'TEAM CRYPTO WHALE';
         const APIKEY = localStorage.getItem('APIKEY');
 
         if (APIKEY) {
